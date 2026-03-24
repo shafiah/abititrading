@@ -58,5 +58,16 @@ public class FileController {
 		filesService.deleteFile(id);
         return ResponseEntity.ok().body("File deleted successfully");
     }
+	
+	// 🔥 NEW API (ADD THIS)
+	@GetMapping("/get/premium/{fileType}")
+	public ResponseEntity<List<Files>> getPremiumFiles(
+	        @PathVariable String fileType){
+
+	    // 🔥 Only paid=true files
+	    List<Files> fileList = filesService.findByFileTypeAndPaid(fileType, true);
+
+	    return ResponseEntity.ok().body(fileList);
+	}
 
 }

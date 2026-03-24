@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.abiti_app_service.models.Files;
+import com.abiti_app_service.models.ResponseModel;
 import com.abiti_app_service.service.FilesService;
 import com.abiti_app_service.util.CONSTANTS;
 
@@ -23,7 +24,8 @@ public class FileUploadController {
 private FilesService filesService;  
   
 @PostMapping(value = "/img/upload")  
-public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) throws Exception {  
+public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
+		@RequestParam("paid") Boolean paid) throws Exception {  
 
 	try {  
 
@@ -58,7 +60,7 @@ public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile fi
 			// ===== SAVE NEW FILE NAME IN DB =====  
 			files.setFileName(newFileName);  
 			
-			files.setPaid(false);  
+			files.setPaid(paid);  
 
 			filesService.saveFile(files);  
 
@@ -74,7 +76,8 @@ public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile fi
 }  
 
 @PostMapping(value = "/pdf/upload")  
-public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file) throws Exception {  
+public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file,
+		@RequestParam("paid") Boolean paid) throws Exception {  
 
 	try {  
 
@@ -109,7 +112,7 @@ public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file
 			// ===== SAVE NEW NAME =====  
 			files.setFileName(newFileName);  
 
-			files.setPaid(false);  
+			files.setPaid(paid);  
 
 			filesService.saveFile(files);  
 
@@ -122,55 +125,65 @@ public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file
 		return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());  
 	}  
 }  
+//🔥 CHANGE 1: Return type String se ResponseModel kar diya
 @PostMapping(value = "/vid/upload")  
-public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {  
+public ResponseEntity<ResponseModel> uploadVideo(
+     @RequestParam("file") MultipartFile file,
+     @RequestParam("paid") Boolean paid) {  
 
-    try {  
+ try {  
 
-        String fileName = file.getOriginalFilename();  
+     String fileName = file.getOriginalFilename();  
 
-        if (fileName == null) {  
-            return ResponseEntity.badRequest().body("{\"error\":\"Invalid file\"}");  
-        }  
+     if (fileName == null) {  
+         // 🔥 CHANGE 2: String ke jagah ResponseModel return
+         return ResponseEntity.badRequest()
+                 .body(new ResponseModel("Invalid file", null));  
+     }  
 
-        // ensure mp4 extension  
-        if (!fileName.toLowerCase().endsWith(".mp4")) {  
-            fileName = fileName + ".mp4";  
-        }  
+     // ensure mp4 extension  
+     if (!fileName.toLowerCase().endsWith(".mp4")) {  
+         fileName = fileName + ".mp4";  
+     }  
 
-        File directory = new File(CONSTANTS.VID_UPLOAD_DIR);  
+     File directory = new File(CONSTANTS.VID_UPLOAD_DIR);  
 
-        if (!directory.exists()) {  
-            directory.mkdirs();  
-        }  
+     if (!directory.exists()) {  
+         directory.mkdirs();  
+     }  
 
-        String newFileName = System.currentTimeMillis() + "_" + fileName;  
+     String newFileName = System.currentTimeMillis() + "_" + fileName;  
 
-        String filePath = directory.getAbsolutePath() + File.separator + newFileName;  
+     String filePath = directory.getAbsolutePath() + File.separator + newFileName;  
 
-        Files existFiles = filesService.findByFileName(fileName);  
+     // ❌ Duplicate check already removed (correct)
 
-        if (existFiles != null) {  
-            return ResponseEntity.badRequest().body("{\"error\":\"File already exists\"}");  
-        }  
+     // save file  
+     file.transferTo(new File(filePath));  
 
-        // save file  
-        file.transferTo(new File(filePath));  
+     Files files = new Files();  
+     files.setFileType(CONSTANTS.FILE_TYPE_MP4);  
+     files.setFileName(newFileName);  
 
-        Files files = new Files();  
-        files.setFileType(CONSTANTS.FILE_TYPE_MP4);  
-        files.setFileName(newFileName);  
-        files.setPaid(false);  
+     // 🔥 IMPORTANT: paid flag save ho raha hai
+     files.setPaid(paid);  
 
-        filesService.saveFile(files);  
+     System.out.println("PAID VALUES :" + paid);
 
-        return ResponseEntity.ok("{\"message\":\"Video uploaded successfully\"}");  
+     filesService.saveFile(files);  
 
-    } catch (Exception e) {  
+     // 🔥 CHANGE 3: Proper success response object
+     return ResponseEntity.ok(
+             new ResponseModel(null, "Video uploaded successfully")
+     );  
 
-        return ResponseEntity.internalServerError()  
-                .body("{\"error\":\"Upload failed : " + e.getMessage() + "\"}");  
-    }  
+ } catch (Exception e) {  
+
+     System.out.println("ERROR :" + e.getMessage());
+
+     // 🔥 CHANGE 4: Proper error response
+     return ResponseEntity.internalServerError()  
+             .body(new ResponseModel("Upload failed : " + e.getMessage(), null));  
+ }  
 }
-
 }
