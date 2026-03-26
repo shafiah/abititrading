@@ -20,170 +20,167 @@ import com.abiti_app_service.util.CONSTANTS;
 @RequestMapping("/file")
 public class FileUploadController {
 
-@Autowired  
-private FilesService filesService;  
-  
-@PostMapping(value = "/img/upload")  
-public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
-		@RequestParam("paid") Boolean paid) throws Exception {  
+	@Autowired
+	private FilesService filesService;
 
-	try {  
+	@PostMapping(value = "/img/upload")
+	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
+			@RequestParam("paid") Boolean paid) throws Exception {
 
-		String fileName = file.getOriginalFilename();  
+		try {
 
-		if (fileName != null && fileName.toLowerCase().endsWith(".jpg")) {  
+			String fileName = file.getOriginalFilename();
 
-			// create folder if not exists  
-			File directory = new File(CONSTANTS.IMG_UPLOAD_DIR);  
-			if (!directory.exists()) {  
-				directory.mkdirs();  
-			}  
+			if (fileName != null && fileName.toLowerCase().endsWith(".jpg")) {
 
-			// ===== NEW : unique file name generate =====  
-			String newFileName = System.currentTimeMillis() + "_" + fileName;  
+				// create folder if not exists
+				File directory = new File(CONSTANTS.IMG_UPLOAD_DIR);
+				if (!directory.exists()) {
+					directory.mkdirs();
+				}
 
-			// file path  
-			String filePath = directory.getAbsolutePath() + File.separator + newFileName;  
+				// ===== NEW : unique file name generate =====
+				String newFileName = System.currentTimeMillis() + "_" + fileName;
 
-			// ===== OLD CODE REMOVED =====  
-			// Files existFiles= filesService.findByFileName(file.getOriginalFilename());  
-			// if(existFiles!=null) {  
-			//	throw new Exception("File already exists");  
-			// }  
+				// file path
+				String filePath = directory.getAbsolutePath() + File.separator + newFileName;
 
-			// save file  
-			file.transferTo(new File(filePath));  
+				// ===== OLD CODE REMOVED =====
+				// Files existFiles= filesService.findByFileName(file.getOriginalFilename());
+				// if(existFiles!=null) {
+				// throw new Exception("File already exists");
+				// }
 
-			Files files = new Files();  
-			files.setFileType(CONSTANTS.FILE_TYPE_JPG);  
+				// save file
+				file.transferTo(new File(filePath));
 
-			// ===== SAVE NEW FILE NAME IN DB =====  
-			files.setFileName(newFileName);  
-			
-			files.setPaid(paid);  
+				Files files = new Files();
+				files.setFileType(CONSTANTS.FILE_TYPE_JPG);
 
-			filesService.saveFile(files);  
+				// ===== SAVE NEW FILE NAME IN DB =====
+				files.setFileName(newFileName);
 
-			//return ResponseEntity.ok("Image uploaded successfully");  
-			return ResponseEntity.ok("{\"message\":\"Image uploaded successfully\"}");  
+				files.setPaid(paid);
 
-		} else {  
-			throw new Exception("Only JPG file allowed");  
-		}  
-	} catch (IOException e) {  
-		return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());  
-	}  
-}  
+				filesService.saveFile(files);
 
-@PostMapping(value = "/pdf/upload")  
-public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file,
-		@RequestParam("paid") Boolean paid) throws Exception {  
+				// return ResponseEntity.ok("Image uploaded successfully");
+				return ResponseEntity.ok("{\"message\":\"Image uploaded successfully\"}");
 
-	try {  
+			} else {
+				throw new Exception("Only JPG file allowed");
+			}
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
+		}
+	}
 
-		String fileName = file.getOriginalFilename();  
+	@PostMapping(value = "/pdf/upload")
+	public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file,
+			@RequestParam("paid") Boolean paid) throws Exception {
 
-		if (fileName != null && fileName.toLowerCase().endsWith(".pdf")) {  
+		try {
 
-			// create folder if not exists  
-			File directory = new File(CONSTANTS.PDF_UPLOAD_DIR);  
-			if (!directory.exists()) {  
-				directory.mkdirs();  
-			}  
+			String fileName = file.getOriginalFilename();
 
-			// ===== NEW : unique file name =====  
-			String newFileName = System.currentTimeMillis() + "_" + fileName;  
+			if (fileName != null && fileName.toLowerCase().endsWith(".pdf")) {
 
-			// file path  
-			String filePath = directory.getAbsolutePath() + File.separator + newFileName;  
+				// create folder if not exists
+				File directory = new File(CONSTANTS.PDF_UPLOAD_DIR);
+				if (!directory.exists()) {
+					directory.mkdirs();
+				}
 
-			// ===== OLD CODE REMOVED =====  
+				// ===== NEW : unique file name =====
+				String newFileName = System.currentTimeMillis() + "_" + fileName;
+
+				// file path
+				String filePath = directory.getAbsolutePath() + File.separator + newFileName;
+
+				// ===== OLD CODE REMOVED =====
 //			 Files existFiles= filesService.findByFileName(file.getOriginalFilename());  
 //			 if(existFiles!=null) {  
 //				throw new Exception("File already exists");  
 //			 }  
 
-			// save file  
-			file.transferTo(new File(filePath));  
+				// save file
+				file.transferTo(new File(filePath));
 
-			Files files = new Files();  
-			files.setFileType(CONSTANTS.FILE_TYPE_PDF);  
+				Files files = new Files();
+				files.setFileType(CONSTANTS.FILE_TYPE_PDF);
 
-			// ===== SAVE NEW NAME =====  
-			files.setFileName(newFileName);  
+				// ===== SAVE NEW NAME =====
+				files.setFileName(newFileName);
 
-			files.setPaid(paid);  
+				files.setPaid(paid);
 
-			filesService.saveFile(files);  
+				filesService.saveFile(files);
 
-			//return ResponseEntity.ok("pdf uploaded successfully");  
-			return ResponseEntity.ok("{\"message\":\"pdf uploaded successfully\"}");  
-		} else {  
-			throw new Exception("Only pdf file allowed");  
-		}  
-	} catch (IOException e) {  
-		return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());  
-	}  
-}  
+				// return ResponseEntity.ok("pdf uploaded successfully");
+				return ResponseEntity.ok("{\"message\":\"pdf uploaded successfully\"}");
+			} else {
+				throw new Exception("Only pdf file allowed");
+			}
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
+		}
+	}
+
 //🔥 CHANGE 1: Return type String se ResponseModel kar diya
-@PostMapping(value = "/vid/upload")  
-public ResponseEntity<ResponseModel> uploadVideo(
-     @RequestParam("file") MultipartFile file,
-     @RequestParam("paid") Boolean paid) {  
+	@PostMapping(value = "/vid/upload")
+	public ResponseEntity<ResponseModel> uploadVideo(@RequestParam("file") MultipartFile file,
+			@RequestParam("paid") Boolean paid) {
 
- try {  
+		try {
 
-     String fileName = file.getOriginalFilename();  
+			String fileName = file.getOriginalFilename();
 
-     if (fileName == null) {  
-         // 🔥 CHANGE 2: String ke jagah ResponseModel return
-         return ResponseEntity.badRequest()
-                 .body(new ResponseModel("Invalid file", null));  
-     }  
+			if (fileName == null) {
+				// 🔥 CHANGE 2: String ke jagah ResponseModel return
+				return ResponseEntity.badRequest().body(new ResponseModel("Invalid file", null));
+			}
 
-     // ensure mp4 extension  
-     if (!fileName.toLowerCase().endsWith(".mp4")) {  
-         fileName = fileName + ".mp4";  
-     }  
+			// ensure mp4 extension
+			if (!fileName.toLowerCase().endsWith(".mp4")) {
+				fileName = fileName + ".mp4";
+			}
 
-     File directory = new File(CONSTANTS.VID_UPLOAD_DIR);  
+			File directory = new File(CONSTANTS.VID_UPLOAD_DIR);
 
-     if (!directory.exists()) {  
-         directory.mkdirs();  
-     }  
+			if (!directory.exists()) {
+				directory.mkdirs();
+			}
 
-     String newFileName = System.currentTimeMillis() + "_" + fileName;  
+			String newFileName = System.currentTimeMillis() + "_" + fileName;
 
-     String filePath = directory.getAbsolutePath() + File.separator + newFileName;  
+			String filePath = directory.getAbsolutePath() + File.separator + newFileName;
 
-     // ❌ Duplicate check already removed (correct)
+			// ❌ Duplicate check already removed (correct)
 
-     // save file  
-     file.transferTo(new File(filePath));  
+			// save file
+			file.transferTo(new File(filePath));
 
-     Files files = new Files();  
-     files.setFileType(CONSTANTS.FILE_TYPE_MP4);  
-     files.setFileName(newFileName);  
+			Files files = new Files();
+			files.setFileType(CONSTANTS.FILE_TYPE_MP4);
+			files.setFileName(newFileName);
 
-     // 🔥 IMPORTANT: paid flag save ho raha hai
-     files.setPaid(paid);  
+			// 🔥 IMPORTANT: paid flag save ho raha hai
+			files.setPaid(paid);
 
-     System.out.println("PAID VALUES :" + paid);
+			System.out.println("PAID VALUES :" + paid);
 
-     filesService.saveFile(files);  
+			filesService.saveFile(files);
 
-     // 🔥 CHANGE 3: Proper success response object
-     return ResponseEntity.ok(
-             new ResponseModel(null, "Video uploaded successfully")
-     );  
+			// 🔥 CHANGE 3: Proper success response object
+			return ResponseEntity.ok(new ResponseModel(null, "Video uploaded successfully"));
 
- } catch (Exception e) {  
+		} catch (Exception e) {
 
-     System.out.println("ERROR :" + e.getMessage());
+			System.out.println("ERROR :" + e.getMessage());
 
-     // 🔥 CHANGE 4: Proper error response
-     return ResponseEntity.internalServerError()  
-             .body(new ResponseModel("Upload failed : " + e.getMessage(), null));  
- }  
-}
+			// 🔥 CHANGE 4: Proper error response
+			return ResponseEntity.internalServerError()
+					.body(new ResponseModel("Upload failed : " + e.getMessage(), null));
+		}
+	}
 }
