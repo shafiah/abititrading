@@ -25,7 +25,7 @@ public class FileUploadController {
 
 	@PostMapping(value = "/img/upload")
 	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
-			@RequestParam("paid") Boolean paid) throws Exception {
+			@RequestParam("paid") Boolean paid,@RequestParam("title") String title) throws Exception {
 
 		try {
 
@@ -61,6 +61,7 @@ public class FileUploadController {
 				files.setFileName(newFileName);
 
 				files.setPaid(paid);
+				files.setTitle(title);
 
 				filesService.saveFile(files);
 
@@ -77,7 +78,7 @@ public class FileUploadController {
 
 	@PostMapping(value = "/pdf/upload")
 	public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file,
-			@RequestParam("paid") Boolean paid) throws Exception {
+			@RequestParam("paid") Boolean paid,@RequestParam("title") String title) throws Exception {
 
 		try {
 
@@ -113,6 +114,7 @@ public class FileUploadController {
 				files.setFileName(newFileName);
 
 				files.setPaid(paid);
+				files.setTitle(title);
 
 				filesService.saveFile(files);
 
@@ -129,7 +131,7 @@ public class FileUploadController {
 //🔥 CHANGE 1: Return type String se ResponseModel kar diya
 	@PostMapping(value = "/vid/upload")
 	public ResponseEntity<ResponseModel> uploadVideo(@RequestParam("file") MultipartFile file,
-			@RequestParam("paid") Boolean paid) {
+			@RequestParam("paid") Boolean paid,@RequestParam("title") String title) {
 
 		try {
 
@@ -166,6 +168,7 @@ public class FileUploadController {
 
 			// 🔥 IMPORTANT: paid flag save ho raha hai
 			files.setPaid(paid);
+			files.setTitle(title);
 
 			System.out.println("PAID VALUES :" + paid);
 

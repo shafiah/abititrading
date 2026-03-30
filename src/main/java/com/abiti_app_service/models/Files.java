@@ -39,5 +39,8 @@ public class Files implements Serializable {
 	@Column(name = "UPLOAD_DATE")
 	private LocalDateTime uploadDate;
 	
+	@Column(name = "TITLE")
+	private String title;
+	
 	
 }
