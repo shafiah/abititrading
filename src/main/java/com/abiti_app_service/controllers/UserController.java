@@ -79,6 +79,29 @@ public class UserController {
         }
     }
     
+
+ // NEW: GET SINGLE USER BY ID
+ @GetMapping("/get-user/{id}")
+ public ResponseEntity<Users> getUserById(@PathVariable Long id) {
+
+     Users user = usersServcie.findUserById(id);
+
+     return ResponseEntity.ok().body(user);
+ }
+ 
+
+// NEW: UPDATE USER DETAILS
+
+@PutMapping("/update-user/{id}")
+public ResponseEntity<Users> updateUserDetails(
+      @PathVariable Long id,
+      @RequestBody Users updatedUser) throws Exception {
+
+  Users user = usersServcie.updateUserDetails(id, updatedUser);
+
+  return ResponseEntity.ok().body(user);
+}
+    
     
     // Correct Code
 //    @PostMapping("/login")

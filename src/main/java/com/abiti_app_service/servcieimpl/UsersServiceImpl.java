@@ -93,4 +93,25 @@ public class UsersServiceImpl implements UsersServcie {
 
     
 	}
+	
+	@Override
+	public Users findUserById(Long id) {
+
+	    return usersDao.findById(id)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+	}
+	
+	
+	@Override
+	public Users updateUserDetails(Long id, Users updatedUser) throws Exception {
+
+	    Users user = usersDao.findById(id)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    // UPDATE FIELDS (ONLY REQUIRED)
+	    user.setUserName(updatedUser.getUserName());
+	  //  user.setPhoneNumber(updatedUser.getPhoneNumber());
+
+	    return usersDao.save(user);
+	}
 }

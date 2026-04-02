@@ -14,5 +14,6 @@ public interface UsersDao extends  JpaRepository<Users, Long> {
 	Users findByPhoneNumber(String phoneNumber);
 
 	List<Users> findByUserType(String type);
+	
 
 }

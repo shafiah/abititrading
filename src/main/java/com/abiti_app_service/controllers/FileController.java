@@ -69,5 +69,14 @@ public class FileController {
 
 	    return ResponseEntity.ok().body(fileList);
 	}
+	
+	//Notification
+	@GetMapping("/get/recent")
+	public ResponseEntity<List<Files>> getRecentFiles() {
+
+	    List<Files> fileList = filesService.getRecentFiles();
+
+	    return ResponseEntity.ok().body(fileList);
+	}
 
 }

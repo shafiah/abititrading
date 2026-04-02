@@ -17,4 +17,8 @@ public interface UsersServcie  {
 	public Users updateUser(Long id,boolean prime) throws Exception;
 	
 	public Users loginUser(String phoneNumber, String password, String deviceId) throws Exception;
+	
+	public Users findUserById(Long id);
+	
+	public Users updateUserDetails(Long id, Users user) throws Exception;
 }

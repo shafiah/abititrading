@@ -80,6 +80,11 @@ public class FilesServiceImpl implements FilesService {
 		file.setPaid(paid);
 		return filesDao.save(file);
 	}
+	
+	@Override
+	public List<Files> getRecentFiles() {
+	    return filesDao.getLast24HoursFiles();
+	}
 
 	
 

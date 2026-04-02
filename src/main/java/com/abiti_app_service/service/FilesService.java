@@ -13,6 +13,8 @@ public interface FilesService {
 	List<Files> findByFileTypeAndPaid(String fileType, boolean paid);
 	void deleteFile(Long id);
 	Files updateFile(Long id, Boolean paid);
+	
+	List<Files> getRecentFiles();
 
 
 }
