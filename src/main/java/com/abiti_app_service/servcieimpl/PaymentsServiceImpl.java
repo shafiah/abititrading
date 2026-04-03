@@ -34,4 +34,9 @@ public class PaymentsServiceImpl implements PaymentsService {
 
         return null;
     }
+    
+    @Override
+    public Payments findByPaymentId(String paymentId) {
+        return paymentsDao.findByPaymentId(paymentId);
+    }
 }

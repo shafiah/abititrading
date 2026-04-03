@@ -7,4 +7,6 @@ public interface PaymentsService {
     Payments savePayment(Payments payment);
 
     Payments updatePayment(String orderId, String paymentId, String status);
+    
+    Payments findByPaymentId(String paymentId);
 }

@@ -1,15 +1,19 @@
 package com.abiti_app_service.controllers;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.abiti_app_service.models.Payments;
+import com.abiti_app_service.models.Users;
+import com.abiti_app_service.service.PaymentsService;
+import com.abiti_app_service.service.UsersServcie;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 
@@ -17,6 +21,12 @@ import com.razorpay.RazorpayClient;
 @RequestMapping("/user/payment")
 @CrossOrigin(origins = "*")
 public class PaymentController {
+	
+	@Autowired
+	private PaymentsService paymentsService;
+
+	@Autowired
+	private UsersServcie usersServcie;
 
 	@GetMapping("/testpayemnt")
 	public String testingPayment() {
@@ -45,31 +55,121 @@ public class PaymentController {
  // ===============================
  // ⭐ NEW API: VERIFY PAYMENT
  // ===============================
- @PostMapping("/verify")
- public ResponseEntity<String> verifyPayment(@RequestParam String paymentId) {
+    @PostMapping("/verify")
+    public ResponseEntity<String> verifyPayment(
+            @RequestParam String paymentId,
+            @RequestParam String orderId,
+          //  @RequestParam(required = false) String signature,    
+            @RequestParam String phoneNumber   
+    ) {
 
-     try {
+        try {
+        	
+//        	// 🔥 STEP 1: SIGNATURE VERIFY
+//            String data = orderId + "|" + paymentId;
+//
+//            String generatedSignature = PaymentUtil.generateSignature(
+//                    data,
+//                    "uiV9Tb0rrnjDr8uVxwOWMzmw" // 🔥 same as application.properties
+//            );
+//
+//            if (!generatedSignature.equals(signature)) {
+//                return ResponseEntity.badRequest().body("Invalid Signature");
+//            }
 
-         // 🔥 FETCH PAYMENT FROM RAZORPAY
-         com.razorpay.Payment payment = razorpayClient.payments.fetch(paymentId);
 
-         String status = payment.get("status");
+            // 🔥 FETCH PAYMENT FROM RAZORPAY
+            com.razorpay.Payment payment = razorpayClient.payments.fetch(paymentId);
+         // 🔥 DUPLICATE CHECK (ADD THIS)
+            Payments existingPayment = paymentsService.findByPaymentId(paymentId);
 
-         // ✅ SUCCESS CHECK
-         if ("captured".equals(status)) {
+            if (existingPayment != null) {
+                return ResponseEntity.ok("Already Verified");
+            }
 
-             // ⭐ TODO: USER PRIME UPDATE (next step)
-             System.out.println("Payment Verified Successfully");
+            String status = payment.get("status");
 
-             return ResponseEntity.ok("Payment Verified");
+            // ✅ SUCCESS CHECK
+            if ("captured".equals(status)) {
 
-         } else {
-             return ResponseEntity.badRequest().body("Payment Not Captured");
-         }
+                // ⭐ EXISTING LOG (UNCHANGED)
+                System.out.println("Payment Verified Successfully");
 
-     } catch (Exception e) {
-         e.printStackTrace();
-         return ResponseEntity.status(500).body("Verification Failed");
-     }
- }
+                // =====================================================
+                // 🔥 NEW CODE START (PAYMENT SAVE + USER PRIME UPDATE)
+                // =====================================================
+
+                // 🔥 1. SAVE PAYMENT IN DB
+                Payments pay = new Payments();
+                pay.setPaymentId(paymentId);
+                pay.setOrderId(orderId);
+                pay.setPhoneNumber(phoneNumber);
+
+                // 🔥 amount paise me hota hai → rupees me convert
+                if (payment.get("amount") != null) {
+                    double amount = Double.parseDouble(payment.get("amount").toString()) / 100;
+                    pay.setAmount(amount);
+                }
+
+                pay.setStatus("SUCCESS");
+
+                paymentsService.savePayment(pay);
+
+                // 🔥 2. UPDATE USER PRIME = TRUE
+                Users user = usersServcie.findByPhoneNumber(phoneNumber);
+
+                if (user != null) {
+                   // user.setPrime(true);
+                    usersServcie.updateUser(user.getId(), true);
+                }
+
+                // =====================================================
+                // 🔥 NEW CODE END
+                // =====================================================
+
+                return ResponseEntity.ok("Payment Verified");
+
+            } else {
+
+                // =====================================================
+                // 🔥 NEW CODE START (FAILED PAYMENT SAVE)
+                // =====================================================
+
+                Payments pay = new Payments();
+                pay.setPaymentId(paymentId);
+                pay.setOrderId(orderId);
+                pay.setPhoneNumber(phoneNumber);
+                pay.setStatus("FAILED");
+
+                paymentsService.savePayment(pay);
+
+                // =====================================================
+                // 🔥 NEW CODE END
+                // =====================================================
+
+                return ResponseEntity.badRequest().body("Payment Not Captured");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            // =====================================================
+            // 🔥 NEW CODE START (ERROR PAYMENT SAVE)
+            // =====================================================
+
+            Payments pay = new Payments();
+            pay.setPaymentId(paymentId);
+            pay.setOrderId(orderId);
+            pay.setPhoneNumber(phoneNumber);
+            pay.setStatus("ERROR");
+
+            paymentsService.savePayment(pay);
+
+            // =====================================================
+            // 🔥 NEW CODE END
+            // =====================================================
+
+            return ResponseEntity.status(500).body("Verification Failed");
+        }
+    }
 }

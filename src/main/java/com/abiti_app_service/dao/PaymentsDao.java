@@ -9,4 +9,5 @@ import com.abiti_app_service.models.Payments;
 public interface PaymentsDao extends JpaRepository<Payments, Long> {
 
     Payments findByOrderId(String orderId);
+    Payments findByPaymentId(String paymentId);
 }

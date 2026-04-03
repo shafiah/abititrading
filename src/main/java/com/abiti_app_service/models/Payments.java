@@ -6,11 +6,14 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "Payments")
 @Table(name = "PAYMENTS")
 @Getter
 @Setter
 public class Payments {
+	
+	private static final long serialVersionUID = 1L;
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,11 +25,11 @@ public class Payments {
     @Column(name = "PAYMENT_ID")
     private String paymentId;
 
-    @Column(name = "USER_PHONE")
-    private String userPhone;
+    @Column(name = "PHONE_NUMBER")
+    private String phoneNumber;
 
     @Column(name = "AMOUNT")
-    private Integer amount;
+    private Double amount;
 
     @Column(name = "STATUS")
     private String status;
