@@ -1,10 +1,13 @@
 package com.abiti_app_service.controllers;
 
 import org.json.JSONObject;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.razorpay.Order;
@@ -38,4 +41,35 @@ public class PaymentController {
 
         return order.toString(); // JSON response
     }
+    
+ // ===============================
+ // ⭐ NEW API: VERIFY PAYMENT
+ // ===============================
+ @PostMapping("/verify")
+ public ResponseEntity<String> verifyPayment(@RequestParam String paymentId) {
+
+     try {
+
+         // 🔥 FETCH PAYMENT FROM RAZORPAY
+         com.razorpay.Payment payment = razorpayClient.payments.fetch(paymentId);
+
+         String status = payment.get("status");
+
+         // ✅ SUCCESS CHECK
+         if ("captured".equals(status)) {
+
+             // ⭐ TODO: USER PRIME UPDATE (next step)
+             System.out.println("Payment Verified Successfully");
+
+             return ResponseEntity.ok("Payment Verified");
+
+         } else {
+             return ResponseEntity.badRequest().body("Payment Not Captured");
+         }
+
+     } catch (Exception e) {
+         e.printStackTrace();
+         return ResponseEntity.status(500).body("Verification Failed");
+     }
+ }
 }
