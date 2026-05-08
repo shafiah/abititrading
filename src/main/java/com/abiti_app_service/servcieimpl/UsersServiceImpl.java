@@ -1,6 +1,7 @@
 package com.abiti_app_service.servcieimpl;
 
 import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class UsersServiceImpl implements UsersServcie {
 
 	@Autowired
 	private UsersDao usersDao;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder; // ⭐ NEW
 
 	@Override
 	public Users findByPhoneNumber(String phoneNumber) {
@@ -41,13 +45,15 @@ public class UsersServiceImpl implements UsersServcie {
 
 	        // NEW DEVICE → UPDATE USER
 	        findUser.setUserName(user.getUserName());
-	        findUser.setPassword(user.getPassword());
+	       // findUser.setPassword(user.getPassword());
+	        findUser.setPassword(passwordEncoder.encode(user.getPassword()));
 	        findUser.setDeviceId(user.getDeviceId());
 
 	        return usersDao.save(findUser);
 	    }
 
 	    // NEW USER → CREATE
+	    user.setPassword(passwordEncoder.encode(user.getPassword()));
 	    return usersDao.save(user);
 	}
 
@@ -82,7 +88,11 @@ public class UsersServiceImpl implements UsersServcie {
 	        throw new Exception("Invalid credential");
 	    }
 
-	    if (!user.getPassword().equals(password)) {
+	   // if (!user.getPassword().equals(password)) {
+	     //   throw new Exception("Invalid credential");
+	   // }
+	    
+	    if (!passwordEncoder.matches(password, user.getPassword())) {
 	        throw new Exception("Invalid credential");
 	    }
 	    if (!user.getDeviceId().equals(deviceId)) {

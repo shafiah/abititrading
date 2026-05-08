@@ -15,10 +15,15 @@ public interface FilesDao extends JpaRepository<Files, Long> {
 	List<Files> findByFileType(String fileType);
 	List<Files> findByFileTypeAndPaid(String fileType, boolean paid);
 	
-	
 	// ⭐ NEW: LAST 24 HOURS FILES
 	@Query(value = "SELECT * FROM FILES WHERE UPLOAD_DATE >= DATEADD('HOUR', -24, CURRENT_TIMESTAMP()) ORDER BY UPLOAD_DATE DESC", nativeQuery = true)
 	List<Files> getLast24HoursFiles();
+	
+	// 🔥 ADD THIS METHOD
+	List<Files> findByFileTypeAndPaidOrderByUploadDateDesc(String fileType, boolean paid);
+
+	// 🔥 ADD THIS ALSO (for prime/all case if needed)
+	List<Files> findByFileTypeOrderByUploadDateDesc(String fileType);
 	
     
 

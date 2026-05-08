@@ -34,12 +34,18 @@ public class FileController {
 	
 	     List<Files> fileList= null;
 		 Users user= usersServcie.findByPhoneNumber(phoneNumber);
+//		if user is prime free+premium video comes in free video list
+//		 if(user!=null && user.isPrime()) {
+//		    fileList = filesService.findByFileType(fileType);
+//		 }else {
+//			fileList = filesService.findByFileTypeAndPaid(fileType,false);
+//		 }
+		// fileList = filesService.findByFileTypeAndPaid(fileType,false);
 		 
-		 if(user!=null && user.isPrime()) {
-		    fileList = filesService.findByFileType(fileType);
-		 }else {
-			fileList = filesService.findByFileTypeAndPaid(fileType,false);
-		 }
+		// ✅ NEW
+		 fileList = filesService.findByFileTypeAndPaidOrderByUploadDateDesc(fileType, false);
+		
+		 
 		 
       return ResponseEntity.ok().body(fileList);
 	}
@@ -60,12 +66,23 @@ public class FileController {
     }
 	
 	// 🔥 NEW API (ADD THIS)
+//	@GetMapping("/get/premium/{fileType}")
+//	public ResponseEntity<List<Files>> getPremiumFiles(
+//	        @PathVariable String fileType){
+//
+//	    // 🔥 Only paid=true files
+//	    List<Files> fileList = filesService.findByFileTypeAndPaid(fileType, true);
+//
+//	    return ResponseEntity.ok().body(fileList);
+//	}
+	
 	@GetMapping("/get/premium/{fileType}")
 	public ResponseEntity<List<Files>> getPremiumFiles(
 	        @PathVariable String fileType){
 
-	    // 🔥 Only paid=true files
-	    List<Files> fileList = filesService.findByFileTypeAndPaid(fileType, true);
+	    // 🔥 ONLY CHANGE: SORT BY LATEST FIRST
+	    List<Files> fileList = filesService
+	            .findByFileTypeAndPaidOrderByUploadDateDesc(fileType, true);
 
 	    return ResponseEntity.ok().body(fileList);
 	}

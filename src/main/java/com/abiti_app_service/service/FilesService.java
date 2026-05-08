@@ -11,10 +11,18 @@ public interface FilesService {
     Files findByFileName(String originalFilename);
 	List<Files> findByFileType(String fileType);
 	List<Files> findByFileTypeAndPaid(String fileType, boolean paid);
+	
 	void deleteFile(Long id);
 	Files updateFile(Long id, Boolean paid);
 	
 	List<Files> getRecentFiles();
+	 // =====================================================
+    // 🔥 NEW METHOD ADD (LATEST VIDEO FIRST)
+    // =====================================================
+    List<Files> findByFileTypeAndPaidOrderByUploadDateDesc(String fileType, boolean paid);
+
+    // 🔥 OPTIONAL (AGAR ALL FILES SORT CHAHIYE FUTURE ME)
+    List<Files> findByFileTypeOrderByUploadDateDesc(String fileType);
 
 
 }

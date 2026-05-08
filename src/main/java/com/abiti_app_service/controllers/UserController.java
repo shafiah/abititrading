@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.abiti_app_service.models.Users;
@@ -100,6 +101,34 @@ public ResponseEntity<Users> updateUserDetails(
   Users user = usersServcie.updateUserDetails(id, updatedUser);
 
   return ResponseEntity.ok().body(user);
+}
+
+@PostMapping("/delete-account")
+public ResponseEntity<String> deleteAccount(
+        @RequestParam String phoneNumber
+) {
+
+    try {
+
+        Users user = usersServcie.findByPhoneNumber(phoneNumber);
+
+        if (user == null) {
+            return ResponseEntity.badRequest()
+                    .body("User Not Found");
+        }
+
+        usersServcie.deleteUser(user.getId());
+
+        return ResponseEntity.ok()
+                .body("Account Deleted Successfully");
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+
+        return ResponseEntity.status(500)
+                .body("Delete Failed");
+    }
 }
     
     

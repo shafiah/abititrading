@@ -45,9 +45,19 @@ public class PaymentController {
         JSONObject options = new JSONObject();
         options.put("amount", 1 * 100); // ₹5000 → paise
         options.put("currency", "INR");
-        options.put("receipt", "txn_001");
+        options.put("receipt", "txn_001" + System.currentTimeMillis());
 
         Order order = razorpayClient.orders.create(options);
+        
+     // 🔥 SAVE CREATED
+      //  Payments pay = new Payments();
+      //  pay.setOrderId(order.get("id"));
+      //  pay.setPhoneNumber("PhoneNumber");
+      //  pay.setAmount(1.0);
+      //  pay.setStatus("CREATED");
+
+      //  paymentsService.savePayment(pay);
+
 
         return order.toString(); // JSON response
     }
@@ -64,6 +74,19 @@ public class PaymentController {
     ) {
 
         try {
+        	
+        	if (paymentId.startsWith("FAILED_")) {
+
+        	    Payments pay = new Payments();
+        	    pay.setPaymentId(paymentId);
+        	    pay.setOrderId(orderId);
+        	    pay.setPhoneNumber(phoneNumber);
+        	    pay.setStatus("FAILED");
+
+        	    paymentsService.savePayment(pay);
+
+        	    return ResponseEntity.ok("Failed Payment Saved");
+        	}
         	
 //        	// 🔥 STEP 1: SIGNATURE VERIFY
 //            String data = orderId + "|" + paymentId;

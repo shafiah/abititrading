@@ -86,6 +86,20 @@ public class FilesServiceImpl implements FilesService {
 	    return filesDao.getLast24HoursFiles();
 	}
 
+	// =====================================================
+    // 🔥 NEW METHOD (LATEST VIDEO FIRST - MOST IMPORTANT)
+    // =====================================================
+    @Override
+    public List<Files> findByFileTypeAndPaidOrderByUploadDateDesc(String fileType, boolean paid) {
+        return filesDao.findByFileTypeAndPaidOrderByUploadDateDesc(fileType, paid);
+    }
+
+    // 🔥 OPTIONAL (ALL FILE SORTED)
+    @Override
+    public List<Files> findByFileTypeOrderByUploadDateDesc(String fileType) {
+        return filesDao.findByFileTypeOrderByUploadDateDesc(fileType);
+    }
+
 	
 
 }
