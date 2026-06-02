@@ -40,18 +40,44 @@ public class DeviceSessionFilter extends OncePerRequestFilter {
         if (phone != null && deviceId != null) {
 
             Users user = usersDao.findByPhoneNumber(phone);
+            
+            if (user == null) {
 
-            if (user != null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-                if (!deviceId.equals(user.getDeviceId())) {
+                response.getWriter().write(
+                        "User not found. Please login again."
+                );
 
-                	System.out.println("Phone Header: " + phone);
-                	System.out.println("Device Header: " + deviceId);
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Session expired. Please login again.");
-                    return;
-                }
+                return;
             }
+
+            // DEVICE CHECK
+            if (!deviceId.equals(user.getDeviceId())) {
+
+                System.out.println("Phone Header: " + phone);
+                System.out.println("Device Header: " + deviceId);
+
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+                response.getWriter().write(
+                        "Session expired. Please login again."
+                );
+
+                return;
+            }
+
+//            if (user != null) {
+//
+//                if (!deviceId.equals(user.getDeviceId())) {
+//
+//                	System.out.println("Phone Header: " + phone);
+//                	System.out.println("Device Header: " + deviceId);
+//                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                    response.getWriter().write("Session expired. Please login again.");
+//                    return;
+//                }
+//            }
         }
 
         filterChain.doFilter(request, response);

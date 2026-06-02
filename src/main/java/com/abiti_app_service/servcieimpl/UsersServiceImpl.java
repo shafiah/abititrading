@@ -54,6 +54,8 @@ public class UsersServiceImpl implements UsersServcie {
 
 	    // NEW USER → CREATE
 	    user.setPassword(passwordEncoder.encode(user.getPassword()));
+	    // New Code added june 2026
+	    user.setEmailId(user.getEmailId());
 	    return usersDao.save(user);
 	}
 

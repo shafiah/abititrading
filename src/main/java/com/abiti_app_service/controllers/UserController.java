@@ -130,6 +130,21 @@ public ResponseEntity<String> deleteAccount(
                 .body("Delete Failed");
     }
 }
+
+//GET USER BY PHONE NUMBER
+@GetMapping("/get-by-phone/{phoneNumber}")
+public ResponseEntity<Users> getUserByPhone(
+     @PathVariable String phoneNumber
+) {
+
+ Users user = usersServcie.findByPhoneNumber(phoneNumber);
+
+ if (user == null) {
+     return ResponseEntity.notFound().build();
+ }
+
+ return ResponseEntity.ok(user);
+}
     
     
     // Correct Code
