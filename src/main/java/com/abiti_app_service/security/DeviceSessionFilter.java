@@ -32,7 +32,11 @@ public class DeviceSessionFilter extends OncePerRequestFilter {
         // login and register API skip
         String path = request.getRequestURI();
 
-        if (path.contains("/user/login") || path.contains("/user/create") || path.contains("/h2-console")) {
+        if (path.contains("/user/login")
+        		|| path.contains("/user/create")
+        		|| path.contains("/user/forgot-password")
+        		|| path.contains("/user/reset-password")
+        		|| path.contains("/h2-console")) {
             filterChain.doFilter(request, response);
             return;
         }

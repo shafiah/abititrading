@@ -21,4 +21,8 @@ public interface UsersServcie  {
 	public Users findUserById(Long id);
 	
 	public Users updateUserDetails(Long id, Users user) throws Exception;
+	
+	public String sendForgotPasswordOtp(String emailId) throws Exception;
+
+	public String resetPassword(String emailId,String otp,String newPassword) throws Exception;
 }

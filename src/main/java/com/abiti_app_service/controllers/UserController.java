@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.abiti_app_service.models.ForgotPasswordRequest;
+import com.abiti_app_service.models.ResetPasswordRequest;
 import com.abiti_app_service.models.Users;
 import com.abiti_app_service.service.UsersServcie;
 
@@ -144,6 +146,47 @@ public ResponseEntity<Users> getUserByPhone(
  }
 
  return ResponseEntity.ok(user);
+}
+
+@PostMapping("/forgot-password")
+public ResponseEntity<?> forgotPassword(
+        @RequestBody ForgotPasswordRequest request) {
+
+    try {
+
+        String response =
+                usersServcie
+                        .sendForgotPasswordOtp(
+                                request.getEmailId());
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+
+        return ResponseEntity.badRequest()
+                .body(e.getMessage());
+    }
+}
+
+@PostMapping("/reset-password")
+public ResponseEntity<?> resetPassword(
+        @RequestBody ResetPasswordRequest request) {
+
+    try {
+
+        String response =
+                usersServcie.resetPassword(
+                        request.getEmailId(),
+                        request.getOtp(),
+                        request.getNewPassword());
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+
+        return ResponseEntity.badRequest()
+                .body(e.getMessage());
+    }
 }
     
     

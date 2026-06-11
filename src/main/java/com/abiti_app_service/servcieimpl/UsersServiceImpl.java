@@ -11,6 +11,12 @@ import com.abiti_app_service.dao.UsersDao;
 import com.abiti_app_service.models.Users;
 import com.abiti_app_service.service.UsersServcie;
 
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+
 @Service
 @Transactional
 public class UsersServiceImpl implements UsersServcie {
@@ -20,6 +26,11 @@ public class UsersServiceImpl implements UsersServcie {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder; // ⭐ NEW
+	
+	@Autowired
+	private JavaMailSender mailSender;
+	
+	private final ConcurrentHashMap<String, String> otpStorage = new ConcurrentHashMap<>();
 
 	@Override
 	public Users findByPhoneNumber(String phoneNumber) {
@@ -125,5 +136,74 @@ public class UsersServiceImpl implements UsersServcie {
 	  //  user.setPhoneNumber(updatedUser.getPhoneNumber());
 
 	    return usersDao.save(user);
+	}
+	
+	@Override
+	public String sendForgotPasswordOtp(String emailId)
+	        throws Exception {
+
+	    Users user = usersDao.findByEmailId(emailId);
+
+	    if (user == null) {
+	        throw new Exception("Email not registered");
+	    }
+
+	    String otp = String.valueOf(
+	            100000 + new Random().nextInt(900000));
+
+	    otpStorage.put(emailId, otp);
+
+	    SimpleMailMessage message =
+	            new SimpleMailMessage();
+
+	    message.setTo(emailId);
+
+	    message.setSubject(
+	            "ABITI TRADING ZONE - Password Reset OTP");
+
+	    message.setText(
+	            "Your OTP is : "
+	            + otp
+	            + "\n\nValid for password reset.");
+
+	    mailSender.send(message);
+
+	    return "OTP sent successfully";
+	}
+	
+	@Override
+	public String resetPassword(
+	        String emailId,
+	        String otp,
+	        String newPassword)
+	        throws Exception {
+
+	    Users user =
+	            usersDao.findByEmailId(emailId);
+
+	    if (user == null) {
+	        throw new Exception(
+	                "User not found");
+	    }
+
+	    String savedOtp =
+	            otpStorage.get(emailId);
+
+	    if (savedOtp == null ||
+	            !savedOtp.equals(otp)) {
+
+	        throw new Exception(
+	                "Invalid OTP");
+	    }
+
+	    user.setPassword(
+	            passwordEncoder.encode(
+	                    newPassword));
+
+	    usersDao.save(user);
+
+	    otpStorage.remove(emailId);
+
+	    return "Password reset successfully";
 	}
 }

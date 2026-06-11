@@ -2,6 +2,8 @@ package com.abiti_app_service.models;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,7 +47,7 @@ public class Users implements Serializable {
 	
 	@Column(name = "USER_STATUS")
 	private String 	userStatus;
-	
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@Column(name = "PASSWORD")
 	private String password;
 	

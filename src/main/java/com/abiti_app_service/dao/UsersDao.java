@@ -12,8 +12,12 @@ import com.abiti_app_service.models.Users;
 public interface UsersDao extends  JpaRepository<Users, Long> {
 
 	Users findByPhoneNumber(String phoneNumber);
+	
+	Users findByEmailId(String emailId);
 
 	List<Users> findByUserType(String type);
+	
+	
 	
 
 }
