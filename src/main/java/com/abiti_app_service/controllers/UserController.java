@@ -26,182 +26,137 @@ public class UserController {
 
 	@Autowired
 	private UsersServcie usersServcie;
-	
+
 	@GetMapping("/home")
 	public String homePage() {
 		return "welcome to ABITI Tranding Investment apps";
 	}
 
-    @PostMapping("/create")
-    public ResponseEntity<Users> createUser(@RequestBody Users user) throws Exception {
-        Users userSaved= usersServcie.saveUser(user);
-        return ResponseEntity.ok().body(userSaved);
-    }
-	
-    @GetMapping("/get-users-list/{type}")
-    public ResponseEntity<List<Users>> getUsersListByType(
-    		@PathVariable String type ) {
-        List<Users> userList= usersServcie.findByUserType(type);
-        return ResponseEntity.ok().body(userList);
-    }
-    
-    
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String>  deleteUser(@PathVariable Long id) {
-    	usersServcie.deleteUser(id);
-        return ResponseEntity.ok().body("User deleted successfully");
-    }
-    
-    @PutMapping("/update-user-plan/{id}/{prime}")
-    public Users updateUserPlanById(
-            @PathVariable Long id,
-            @PathVariable Boolean prime) throws Exception {
-        return usersServcie.updateUser(id,prime);
-    }
-    
-    
-    // Used to show correct pop up error
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody Users request) {
+	@PostMapping("/create")
+	public ResponseEntity<Users> createUser(@RequestBody Users user) throws Exception {
+		Users userSaved = usersServcie.saveUser(user);
+		return ResponseEntity.ok().body(userSaved);
+	}
 
-        try {
+	@GetMapping("/get-users-list/{type}")
+	public ResponseEntity<List<Users>> getUsersListByType(@PathVariable String type) {
+		List<Users> userList = usersServcie.findByUserType(type);
+		return ResponseEntity.ok().body(userList);
+	}
 
-            Users response = usersServcie.loginUser(
-                    request.getPhoneNumber(),
-                    request.getPassword(),
-                    request.getDeviceId()
-            );
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+		usersServcie.deleteUser(id);
+		return ResponseEntity.ok().body("User deleted successfully");
+	}
 
-            return ResponseEntity.ok(response);
+	@PutMapping("/update-user-plan/{id}/{prime}")
+	public Users updateUserPlanById(@PathVariable Long id, @PathVariable Boolean prime) throws Exception {
+		return usersServcie.updateUser(id, prime);
+	}
 
-        } catch (Exception e) {
+	// Used to show correct pop up error
+	@PostMapping("/login")
+	public ResponseEntity<?> loginUser(@RequestBody Users request) {
 
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
-    }
-    
+		try {
 
- // NEW: GET SINGLE USER BY ID
- @GetMapping("/get-user/{id}")
- public ResponseEntity<Users> getUserById(@PathVariable Long id) {
+			Users response = usersServcie.loginUser(request.getPhoneNumber(), request.getPassword(),
+					request.getDeviceId());
 
-     Users user = usersServcie.findUserById(id);
+			return ResponseEntity.ok(response);
 
-     return ResponseEntity.ok().body(user);
- }
- 
+		} catch (Exception e) {
 
-// NEW: UPDATE USER DETAILS
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+		}
+	}
 
-@PutMapping("/update-user/{id}")
-public ResponseEntity<Users> updateUserDetails(
-      @PathVariable Long id,
-      @RequestBody Users updatedUser) throws Exception {
+	// NEW: GET SINGLE USER BY ID
+	@GetMapping("/get-user/{id}")
+	public ResponseEntity<Users> getUserById(@PathVariable Long id) {
 
-  Users user = usersServcie.updateUserDetails(id, updatedUser);
+		Users user = usersServcie.findUserById(id);
 
-  return ResponseEntity.ok().body(user);
+		return ResponseEntity.ok().body(user);
+	}
+
+	// NEW: UPDATE USER DETAILS
+
+	@PutMapping("/update-user/{id}")
+	public ResponseEntity<Users> updateUserDetails(@PathVariable Long id, @RequestBody Users updatedUser)
+			throws Exception {
+
+		Users user = usersServcie.updateUserDetails(id, updatedUser);
+
+		return ResponseEntity.ok().body(user);
+	}
+
+	@PostMapping("/delete-account")
+	public ResponseEntity<String> deleteAccount(@RequestParam String phoneNumber) {
+
+		try {
+
+			Users user = usersServcie.findByPhoneNumber(phoneNumber);
+
+			if (user == null) {
+				return ResponseEntity.badRequest().body("User Not Found");
+			}
+
+			usersServcie.deleteUser(user.getId());
+
+			return ResponseEntity.ok().body("Account Deleted Successfully");
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+			return ResponseEntity.status(500).body("Delete Failed");
+		}
+	}
+
+	//GET USER BY PHONE NUMBER
+	@GetMapping("/get-by-phone/{phoneNumber}")
+	public ResponseEntity<Users> getUserByPhone(@PathVariable String phoneNumber) {
+
+		Users user = usersServcie.findByPhoneNumber(phoneNumber);
+
+		if (user == null) {
+			return ResponseEntity.notFound().build();
+		}
+
+		return ResponseEntity.ok(user);
+	}
+
+	@PostMapping("/forgot-password")
+	public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+
+		try {
+
+			String response = usersServcie.sendForgotPasswordOtp(request.getEmailId());
+
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
+	@PostMapping("/reset-password")
+	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+
+		try {
+
+			String response = usersServcie.resetPassword(request.getEmailId(), request.getOtp(),
+					request.getNewPassword());
+
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
 }
-
-@PostMapping("/delete-account")
-public ResponseEntity<String> deleteAccount(
-        @RequestParam String phoneNumber
-) {
-
-    try {
-
-        Users user = usersServcie.findByPhoneNumber(phoneNumber);
-
-        if (user == null) {
-            return ResponseEntity.badRequest()
-                    .body("User Not Found");
-        }
-
-        usersServcie.deleteUser(user.getId());
-
-        return ResponseEntity.ok()
-                .body("Account Deleted Successfully");
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-
-        return ResponseEntity.status(500)
-                .body("Delete Failed");
-    }
-}
-
-//GET USER BY PHONE NUMBER
-@GetMapping("/get-by-phone/{phoneNumber}")
-public ResponseEntity<Users> getUserByPhone(
-     @PathVariable String phoneNumber
-) {
-
- Users user = usersServcie.findByPhoneNumber(phoneNumber);
-
- if (user == null) {
-     return ResponseEntity.notFound().build();
- }
-
- return ResponseEntity.ok(user);
-}
-
-@PostMapping("/forgot-password")
-public ResponseEntity<?> forgotPassword(
-        @RequestBody ForgotPasswordRequest request) {
-
-    try {
-
-        String response =
-                usersServcie
-                        .sendForgotPasswordOtp(
-                                request.getEmailId());
-
-        return ResponseEntity.ok(response);
-
-    } catch (Exception e) {
-
-        return ResponseEntity.badRequest()
-                .body(e.getMessage());
-    }
-}
-
-@PostMapping("/reset-password")
-public ResponseEntity<?> resetPassword(
-        @RequestBody ResetPasswordRequest request) {
-
-    try {
-
-        String response =
-                usersServcie.resetPassword(
-                        request.getEmailId(),
-                        request.getOtp(),
-                        request.getNewPassword());
-
-        return ResponseEntity.ok(response);
-
-    } catch (Exception e) {
-
-        return ResponseEntity.badRequest()
-                .body(e.getMessage());
-    }
-}
-    
-    
-    // Correct Code
-//    @PostMapping("/login")
-//    public ResponseEntity<?> loginUser(@RequestBody Users user) throws Exception {
-//
-//        Users loginUser = usersServcie.loginUser(
-//                user.getPhoneNumber(),
-//                user.getPassword(),
-//                user.getDeviceId()
-//        );
-//
-//        return ResponseEntity.ok().body(loginUser);
-//    }
-	
-}
-

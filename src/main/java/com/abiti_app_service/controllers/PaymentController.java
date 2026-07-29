@@ -146,10 +146,6 @@ public class PaymentController {
                     usersServcie.updateUser(user.getId(), true);
                 }
 
-                // =====================================================
-                // 🔥 NEW CODE END
-                // =====================================================
-
                 return ResponseEntity.ok("Payment Verified");
 
             } else {
@@ -165,10 +161,6 @@ public class PaymentController {
                 pay.setStatus("FAILED");
 
                 paymentsService.savePayment(pay);
-
-                // =====================================================
-                // 🔥 NEW CODE END
-                // =====================================================
 
                 return ResponseEntity.badRequest().body("Payment Not Captured");
             }
@@ -187,10 +179,6 @@ public class PaymentController {
             pay.setStatus("ERROR");
 
             paymentsService.savePayment(pay);
-
-            // =====================================================
-            // 🔥 NEW CODE END
-            // =====================================================
 
             return ResponseEntity.status(500).body("Verification Failed");
         }

@@ -45,13 +45,7 @@ public class FileUploadController {
 				// file path
 				String filePath = directory.getAbsolutePath() + File.separator + newFileName;
 
-				// ===== OLD CODE REMOVED =====
-				// Files existFiles= filesService.findByFileName(file.getOriginalFilename());
-				// if(existFiles!=null) {
-				// throw new Exception("File already exists");
-				// }
-
-				// save file
+				
 				file.transferTo(new File(filePath));
 
 				Files files = new Files();
@@ -98,12 +92,6 @@ public class FileUploadController {
 				// file path
 				String filePath = directory.getAbsolutePath() + File.separator + newFileName;
 
-				// ===== OLD CODE REMOVED =====
-//			 Files existFiles= filesService.findByFileName(file.getOriginalFilename());  
-//			 if(existFiles!=null) {  
-//				throw new Exception("File already exists");  
-//			 }  
-
 				// save file
 				file.transferTo(new File(filePath));
 
@@ -128,7 +116,7 @@ public class FileUploadController {
 		}
 	}
 
-//🔥 CHANGE 1: Return type String se ResponseModel kar diya
+	//🔥 CHANGE 1: Return type String se ResponseModel kar diya
 	@PostMapping(value = "/vid/upload")
 	public ResponseEntity<ResponseModel> uploadVideo(@RequestParam("file") MultipartFile file,
 			@RequestParam("paid") Boolean paid,@RequestParam("title") String title) {

@@ -1,21 +1,21 @@
 package com.abiti_app_service.servcieimpl;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.abiti_app_service.dao.OtpRepository;
 import com.abiti_app_service.dao.UsersDao;
+import com.abiti_app_service.models.OtpEntity;
 import com.abiti_app_service.models.Users;
 import com.abiti_app_service.service.UsersServcie;
-
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 
 @Service
 @Transactional
@@ -30,7 +30,9 @@ public class UsersServiceImpl implements UsersServcie {
 	@Autowired
 	private JavaMailSender mailSender;
 	
-	private final ConcurrentHashMap<String, String> otpStorage = new ConcurrentHashMap<>();
+	@Autowired
+	private OtpRepository otpRepository;
+	
 
 	@Override
 	public Users findByPhoneNumber(String phoneNumber) {
@@ -43,6 +45,29 @@ public class UsersServiceImpl implements UsersServcie {
 		// TODO Auto-generated method stub
 
 		Users findUser = usersDao.findByPhoneNumber(user.getPhoneNumber());
+		
+		// EMAIL ALREADY EXISTS CHECK
+		if (user.getEmailId() != null &&
+		        !user.getEmailId().trim().isEmpty()) {
+
+		    Users emailUser =
+		            usersDao.findByEmailId(
+		                    user.getEmailId());
+
+		    if (emailUser != null) {
+
+		        // SAME MOBILE + SAME EMAIL
+		        if (findUser != null &&
+		                emailUser.getId().equals(findUser.getId())) {
+
+		            // same user, allow update
+		        } else {
+
+		            throw new Exception(
+		                    "Email already registered. Please use another email.");
+		        }
+		    }
+		}
 
 	    // USER ALREADY EXISTS
 	    if (findUser != null) {
@@ -57,6 +82,7 @@ public class UsersServiceImpl implements UsersServcie {
 	        // NEW DEVICE → UPDATE USER
 	        findUser.setUserName(user.getUserName());
 	       // findUser.setPassword(user.getPassword());
+	        findUser.setEmailId(user.getEmailId());
 	        findUser.setPassword(passwordEncoder.encode(user.getPassword()));
 	        findUser.setDeviceId(user.getDeviceId());
 
@@ -65,7 +91,6 @@ public class UsersServiceImpl implements UsersServcie {
 
 	    // NEW USER → CREATE
 	    user.setPassword(passwordEncoder.encode(user.getPassword()));
-	    // New Code added june 2026
 	    user.setEmailId(user.getEmailId());
 	    return usersDao.save(user);
 	}
@@ -101,15 +126,18 @@ public class UsersServiceImpl implements UsersServcie {
 	        throw new Exception("Invalid credential");
 	    }
 
-	   // if (!user.getPassword().equals(password)) {
-	     //   throw new Exception("Invalid credential");
-	   // }
 	    
 	    if (!passwordEncoder.matches(password, user.getPassword())) {
 	        throw new Exception("Invalid credential");
 	    }
-	    if (!user.getDeviceId().equals(deviceId)) {
-	        throw new Exception("This device isn't registered with this number. Please register device.");
+	
+	 // Google Play Review Account - Skip Device Validation
+	    if (!phoneNumber.equals("7828103669")) {
+
+	        if (!user.getDeviceId().equals(deviceId)) {
+	            throw new Exception("This device isn't registered with this number. Please register device.");
+	        }
+
 	    }
 
 	    return user;
@@ -151,7 +179,27 @@ public class UsersServiceImpl implements UsersServcie {
 	    String otp = String.valueOf(
 	            100000 + new Random().nextInt(900000));
 
-	    otpStorage.put(emailId, otp);
+	   // otpStorage.put(emailId, otp);
+	    OtpEntity otpEntity =
+	            otpRepository.findByEmailId(emailId);
+	    if (otpEntity == null) {
+
+	        otpEntity = new OtpEntity();
+
+	        otpEntity.setCreatedAt(
+	                LocalDateTime.now());
+	    }
+
+	    otpEntity.setEmailId(emailId);
+
+	    otpEntity.setOtp(otp);
+
+	    otpEntity.setVerified(false);
+
+	    otpEntity.setExpiryTime(
+	            LocalDateTime.now().plusMinutes(10));
+
+	    otpRepository.save(otpEntity);
 
 	    SimpleMailMessage message =
 	            new SimpleMailMessage();
@@ -162,10 +210,19 @@ public class UsersServiceImpl implements UsersServcie {
 	            "ABITI TRADING ZONE - Password Reset OTP");
 
 	    message.setText(
-	            "Your OTP is : "
-	            + otp
-	            + "\n\nValid for password reset.");
+	            "ABITI Trading Zone\n\n" +
 
+	            "Your OTP is: " + otp +
+
+	            "\n\nThis OTP is valid for 10 minutes only." +
+
+	            "\n\nDo not share this OTP with anyone." +
+
+	            "\n\nIf you did not request a password reset, please ignore this email." +
+
+	            "\n\nThank you," +
+	            "\nABITI Trading Zone Team"
+	    );
 	    mailSender.send(message);
 
 	    return "OTP sent successfully";
@@ -186,11 +243,31 @@ public class UsersServiceImpl implements UsersServcie {
 	                "User not found");
 	    }
 
-	    String savedOtp =
-	            otpStorage.get(emailId);
+	    OtpEntity otpEntity =
+	            otpRepository.findByEmailId(emailId);
 
-	    if (savedOtp == null ||
-	            !savedOtp.equals(otp)) {
+	    if (otpEntity == null) {
+
+	        throw new Exception(
+	                "OTP not found");
+	    }
+
+	    if (otpEntity.isVerified()) {
+
+	        throw new Exception(
+	                "OTP already used");
+	    }
+
+	    if (LocalDateTime.now()
+	            .isAfter(
+	                    otpEntity.getExpiryTime())) {
+
+	        throw new Exception(
+	                "OTP expired");
+	    }
+
+	    if (!otp.equals(
+	            otpEntity.getOtp())) {
 
 	        throw new Exception(
 	                "Invalid OTP");
@@ -201,8 +278,12 @@ public class UsersServiceImpl implements UsersServcie {
 	                    newPassword));
 
 	    usersDao.save(user);
+	    
+	    otpEntity.setVerified(true);
 
-	    otpStorage.remove(emailId);
+	    otpRepository.save(otpEntity);
+
+	    //otpStorage.remove(emailId);
 
 	    return "Password reset successfully";
 	}

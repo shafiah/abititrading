@@ -12,19 +12,23 @@ import com.abiti_app_service.models.Users;
 public interface FilesDao extends JpaRepository<Files, Long> {
 
 	Files findByFileName(String originalFilename);
+
 	List<Files> findByFileType(String fileType);
+
 	List<Files> findByFileTypeAndPaid(String fileType, boolean paid);
-	
-	// ⭐ NEW: LAST 24 HOURS FILES
-	@Query(value = "SELECT * FROM FILES WHERE UPLOAD_DATE >= DATEADD('HOUR', -24, CURRENT_TIMESTAMP()) ORDER BY UPLOAD_DATE DESC", nativeQuery = true)
+
+	// ⭐ NEW: LAST 24 HOURS FILES H@ DB k lye
+	// @Query(value = "SELECT * FROM FILES WHERE UPLOAD_DATE >= DATEADD('HOUR', -24,
+	// CURRENT_TIMESTAMP()) ORDER BY UPLOAD_DATE DESC", nativeQuery = true)
+	// List<Files> getLast24HoursFiles();
+
+	@Query(value = "SELECT * FROM files ORDER BY upload_date DESC LIMIT 20", nativeQuery = true)
 	List<Files> getLast24HoursFiles();
-	
+
 	// 🔥 ADD THIS METHOD
 	List<Files> findByFileTypeAndPaidOrderByUploadDateDesc(String fileType, boolean paid);
 
 	// 🔥 ADD THIS ALSO (for prime/all case if needed)
 	List<Files> findByFileTypeOrderByUploadDateDesc(String fileType);
-	
-    
 
 }

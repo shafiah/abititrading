@@ -57,31 +57,24 @@ public class DeviceSessionFilter extends OncePerRequestFilter {
             }
 
             // DEVICE CHECK
-            if (!deviceId.equals(user.getDeviceId())) {
+            // Google play review account
+            if(!phone.equals("7828103669")) {
+            	if (!deviceId.equals(user.getDeviceId())) {
 
-                System.out.println("Phone Header: " + phone);
-                System.out.println("Device Header: " + deviceId);
+                    System.out.println("Phone Header: " + phone);
+                    System.out.println("Device Header: " + deviceId);
 
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-                response.getWriter().write(
-                        "Session expired. Please login again."
-                );
+                    response.getWriter().write(
+                            "Session expired. Please login again."
+                    );
 
-                return;
+                    return;
+                }
             }
+            
 
-//            if (user != null) {
-//
-//                if (!deviceId.equals(user.getDeviceId())) {
-//
-//                	System.out.println("Phone Header: " + phone);
-//                	System.out.println("Device Header: " + deviceId);
-//                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//                    response.getWriter().write("Session expired. Please login again.");
-//                    return;
-//                }
-//            }
         }
 
         filterChain.doFilter(request, response);
